@@ -1,0 +1,292 @@
+---
+title: "AnalyticsEdge"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Dataset has following features :
+
+ID: a unique identifier for each observation
+Date: the date the crime occurred
+LocationDescription: the location where the crime occurred
+Arrest: whether or not an arrest was made for the crime (TRUE if an arrest was made, and FALSE if an arrest was not made)
+Domestic: whether or not the crime was a domestic crime, meaning that it was committed against a family member (TRUE if it was domestic, and FALSE if it was not domestic)
+Beat: the area, or "beat" in which the crime occurred. This is the smallest regional division defined by the Chicago police department.
+District: the police district in which the crime occured. Each district is composed of many beats, and are defined by the Chicago Police Department.
+CommunityArea: the community area in which the crime occurred. Since the 1920s, Chicago has been divided into what are called "community areas", of which there are now 77. The community areas were devised in an attempt to create socially homogeneous regions.
+Year: the year in which the crime occurred.
+Latitude: the latitude of the location at which the crime occurred.
+Longitude: the longitude of the location at which the crime occurred.
+
+```{r}
+setwd("/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/")
+list.files()
+mv<-read.csv('mvtWeek1.csv', sep=',')
+numberOfRows<-nrow(mv)
+numberVariables<-ncol(mv)
+max(mv$ID)
+#1.4
+min(mv$Beat)
+#1.5
+length(which(mv$Arrest==TRUE))
+
+#1.6
+length(which(pf$LocationDescription=='ALLEY'))
+#2.2
+DateConvert = as.Date(strptime(mv$Date, "%m/%d/%y %H:%M"))
+summary(DateConvert)
+
+#2.3
+mv$Month = months(DateConvert)
+mv$Weekday = weekdays(DateConvert)
+mv$Date = DateConvert
+#find out the frequency of each Month
+table(mv$Month)
+#2.4
+table(mv$Weekday)
+
+#2.5
+arrest = subset(mv, mv$Arrest==TRUE)
+table (arrest$Month)
+
+#3.1 visualizae crime trends
+
+hist(mv$Year, breaks=13)
+
+#3.2,  Create a boxplot of the variable "Date", sorted by the variable "Arrest"
+ boxplot(mv$Date ~ mv$Arrest)
+
+# 3.3,
+portion1=subset(x=mv, subset= (Arrest==TRUE) & (Year==2001))
+portion2=subset(x=mv, subset= (Year==2001))
+
+nrow(portion1)/nrow(portion2)
+#or
+table(mv$Year, mv$Arrest)
+
+#3.4
+portion1=subset(x=mv, subset= (Arrest==TRUE) & (Year==2007))
+portion2=subset(x=mv, subset= (Year==2007))
+
+nrow(portion1)/nrow(portion2)
+
+# 3.5
+portion1=subset(x=mv, subset= (Arrest==TRUE) & (Year==2012))
+portion2=subset(x=mv, subset= (Year==2012))
+
+nrow(portion1)/nrow(portion2)
+
+
+#find top 5 locations where theft made
+sortedLoc=sort(table(mv$LocationDescription))
+
+#4.2
+top5Name=c("PARKING LOT/GARAGE(NON.RESID.)", "STREET", "ALLEY", "GAS STATION","DRIVEWAY - RESIDENTIAL")
+Top5=subset(x=mv, subset=LocationDescription %in% top5Name)
+nrow(Top5)
+
+#it says rate, so you should measure the number of #True (arrested) / #(True+False)
+table(Top5$LocationDescription, Top5$Arrest)
+#or
+
+#4.3, get rid of those fields that do not present, has zero apperance
+Top5$LocationDescription = factor(Top5$LocationDescription)
+summary(Top5$LocationDescription)
+
+#4.4
+subGas = subset(x=mv, subset = (LocationDescription == 'GAS STATION'))
+sort(table(subGas$Weekday))
+#or
+table(Top5$LocationDescription, Top5$Weekday)
+
+#4.5
+subGas = subset(x=mv, subset = (LocationDescription == 'DRIVEWAY - RESIDENTIAL'))
+sort(table(subGas$Weekday))
+
+```
+
+#Stock Dynamics
+Each data frame has two variables, described as follows:
+
+Date: the date of the stock price, always given as the first of the month.
+StockPrice: the average stock price of the company in the given month.
+In this problem, we'll take a look at how the stock dynamics of these companies have changed over time.
+```{r}
+#Load csv files
+IBM = read.csv(file="/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/IBMStock.csv", sep =',')
+GE = read.csv(file="/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/GEStock.csv", sep =',')
+ProcterGamble = read.csv(file="/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/ProcterGambleStock.csv", sep =',')
+CocaCola = read.csv(file="/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/CocaColaStock.csv", sep =',')
+Boeing = read.csv(file="/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/BoeingStock.csv", sep =',')
+
+#1.1, We can convert date factor to a "Date" object in R 
+IBM$Date = as.Date(IBM$Date, "%m/%d/%y")
+GE$Date = as.Date(GE$Date, "%m/%d/%y")
+ProcterGamble$Date = as.Date(ProcterGamble$Date, "%m/%d/%y")
+CocaCola$Date = as.Date(CocaCola$Date, "%m/%d/%y")
+Boeing$Date = as.Date(Boeing$Date, "%m/%d/%y")
+
+library(ggplot2)
+
+#qplot(x=CocaCola$Date, y=CocaCola$StockPrice, geom="line", color=I('red')) 
+
+plot(x=CocaCola$Date, y=CocaCola$StockPrice, type="l", col='black') 
+#2.2
+lines(ProcterGamble$Date, ProcterGamble$StockPrice, col="blue", lty=2)
+
+#draw vertical line, lwd=2 make it tiker
+abline(v=as.Date(c("2000-03-01")), lwd=2, col="red")
+
+#2.3
+abline(v=as.Date(c("1983-06-01")), lwd=0.5, col="red")
+
+summary(CocaCola$StockPrice)
+summary(ProcterGamble$StockPrice)
+
+#3.1, from index 310 till 432
+plot(CocaCola$Date[310:432], CocaCola$StockPrice[310:432], type="l", col="red", ylim=c(0,210))
+lines(IBM$Date[310:432], IBM$StockPrice[310:432], type="l", col="blue", ylim=c(0,210))
+lines(GE$Date[310:432], GE$StockPrice[310:432], type="l", col="green", ylim=c(0,210))
+lines(Boeing$Date[310:432], Boeing$StockPrice[310:432], type="l", col="black", ylim=c(0,210))
+lines(ProcterGamble$Date[310:432], ProcterGamble$StockPrice[310:432], type="l", col="purple", ylim=c(0,210))
+
+abline(v=as.Date(c("2000-03-01")), color="gery")
+
+#3.2
+abline(v=as.Date(c("1997-09-01")), color= "grey", lwd= 1)
+abline(v=as.Date(c("1997-11-30")), color= "grey", lwd= 1)
+
+# 4.1, to see mean of stockprice groupped by date
+tapply(IBM$StockPrice, months(IBM$Date), mean)
+
+#4.2
+
+tapply(CocaCola$StockPrice, months(CocaCola$Date), mean)
+
+tapply(GE$StockPrice, months(GE$Date), mean)
+
+```
+
+#DEMOGRAPHICS AND EMPLOYMENT IN THE UNITED STATES
+CPSData.csv, which has the following variables:
+
+#PeopleInHousehold: The number of people in the interviewee's household.
+#Region: The census region where the interviewee lives.
+#State: The state where the interviewee lives.
+#MetroAreaCode: A code that identifies the metropolitan area in which the interviewee lives (missing if the interviewee does not #live in a metropolitan area). The mapping from codes to names of metropolitan areas is provided in the file MetroAreaCodes.csv.
+#Age: The age, in years, of the interviewee. 80 represents people aged 80-84, and 85 represents people aged 85 and higher.
+#Married: The marriage status of the interviewee.
+#Sex: The sex of the interviewee.
+#Education: The maximum level of education obtained by the interviewee.
+#Race: The race of the interviewee.
+#Hispanic: Whether the interviewee is of Hispanic ethnicity.
+
+#CountryOfBirthCode: A code identifying the country of birth of the interviewee. The mapping from codes to names of countries is provided in the file CountryCodes.csv.
+
+#Citizenship: The United States citizenship status of the interviewee.
+
+#EmploymentStatus: The status of employment of the interviewee.
+
+#Industry: The industry of employment of the interviewee (only available if they are employed).
+
+
+
+```{r}
+setwd("/Users/shahab/Coursera/AnalyticsEdge-edx/assign1/")
+CPS= read.csv(file="CPSData.csv", sep=",")
+ #1.1
+summary(CPS)
+str(CPS)
+
+#1.2 the most common industry
+sort(table(CPS$Industry))
+
+#1.3
+sort(table(CPS$State))
+
+#1.4
+nonecitizen = subset(x=CPS, subset= (Citizenship == 'Non-Citizen' ))
+1-(nrow(nonecitizen) / nrow(CPS))
+
+#1.5
+table(CPS$Race,CPS$Hispanic)
+
+#2.1
+summary(CPS)
+
+#2.2
+table(CPS$Region, is.na(CPS$Married))
+table(CPS$Sex, is.na(CPS$Married))
+table(CPS$Age, is.na(CPS$Married))
+table(CPS$Citizenship, is.na(CPS$Married))
+
+#2.3
+table (CPS$State, is.na(CPS$MetroAreaCode))
+
+
+#2.5
+d25 =ems/apply(ems, 1, sum)
+#convert table to data.frame
+d25 = as.data.frame.matrix(d25)
+#or alternativley, you can do
+tapply(is.na(CPS$MetroAreaCode), CPS$State, mean)
+sort(tapply(is.na(CPS$MetroAreaCode), CPS$State, mean))
+
+#3.1
+#Codes like MetroAreaCode and CountryOfBirthCode are a compact way to encode factor variables with text as their possible values, and they are therefore quite common in survey datasets. In fact, all but one of the variables in this dataset were actually stored by a numeric code in the original CPS datafile.
+
+#When analyzing a variable stored by a numeric code, we will often want to convert it into the values the codes represent. To do this, we will use a dictionary, which maps the the code to the actual value of the variable. We have provided dictionaries MetroAreaCodes.csv and CountryCodes.csv, which respectively map MetroAreaCode and CountryOfBirthCode into their true values. Read these two dictionaries into data frames MetroAreaMap and CountryMap.
+
+MetroAreaMap  = read.csv("MetroAreaCodes.csv", sep =",")
+CountryMap = read.csv("CountryCodes.csv", sep =",")
+
+str(MetroAreaMap)
+str(CountryMap)
+
+
+#3.2, merging two data. frames
+#Finally, all.x=TRUE means we want to keep all rows from the "x" data frame (CPS), even if some of the rows' MetroAreaCode doesn't match any codes in MetroAreaMap (for those familiar with database terminology, this parameter makes the operation a left outer join instead of an inner join).
+CPS = merge(CPS, MetroAreaMap, by.x="MetroAreaCode", by.y="Code", all.x=TRUE)
+str(CPS)
+summary(CPS)
+
+table(is.na(CPS$MetroArea))
+
+#3.3
+sort(table(CPS$MetroArea))
+
+#3.4
+sort(tapply( CPS$Hispanic, CPS$MetroArea, mean))
+
+#3.5
+sort(tapply(CPS$Race=='Asian', CPS$MetroArea, mean))
+
+#3.6
+sort(tapply(CPS$Education == "No high school diploma", CPS$MetroArea, mean, na.rm=TRUE))
+
+
+#4.1
+
+CPS = merge(CPS, CountryMap, by.x="CountryOfBirthCode", by.y="Code", all.x=TRUE)
+str(CPS)
+
+#4.2
+sort(table(CPS$Country))
+
+#4.3
+sort(tapply( CPS$Country != "United States",CPS$MetroArea , mean, na.rm=TRUE))
+
+
+
+#4.5
+sort(tapply(CPS$Country=="India", CPS$MetroArea, sum, na.rm=TRUE))
+
+sort(tapply(CPS$Country=="Brazil", CPS$MetroArea, sum, na.rm=TRUE))
+
+sort(tapply(CPS$Country=="Somalia", CPS$MetroArea, sum, na.rm=TRUE))
+
+
+```
+
